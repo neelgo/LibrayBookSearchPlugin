@@ -1,0 +1,10 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+ 
+ /**
+ * Search Form 
+ **/
+ #Ds_library_book_search legend,#Ds_library_book_search .btn-center{ text-align:center;}     
+ .center-me{margin: 0 auto;    width: 10%;    float: none;}
