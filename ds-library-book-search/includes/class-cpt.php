@@ -1,9 +1,9 @@
 <?php
+
 /**
  * Custom Post Type Class
  *
  * Used to help create custom post types for Wordpress.
- * @link http://github.com/jjgrainger/wp-custom-post-type-class/
  *
  * @author  Neelesh Gothania <mr.neelesh.gothania@gmail.com>
  * @version 0.2
@@ -115,10 +115,10 @@ class CPT {
      * @param mixed $post_type_names The name(s) of the post type, accepts (post type name, slug, plural, singular).
      * @param array $options User submitted options.
      */
-    function __construct( $post_type_names, $options = array() ) {
+    function __construct($post_type_names, $options = array()) {
 
         // Check if post type names is a string or an array.
-        if ( is_array( $post_type_names ) ) {
+        if (is_array($post_type_names)) {
 
             // Add names to object.
             $names = array(
@@ -131,15 +131,15 @@ class CPT {
             $this->post_type_name = $post_type_names['post_type_name'];
 
             // Cycle through possible names.
-            foreach ( $names as $name ) {
+            foreach ($names as $name) {
 
                 // If the name has been set by user.
-                if ( isset( $post_type_names[ $name ] ) ) {
+                if (isset($post_type_names[$name])) {
 
                     // Use the user setting
-                    $this->$name = $post_type_names[ $name ];
+                    $this->$name = $post_type_names[$name];
 
-                // Else generate the name.
+                    // Else generate the name.
                 } else {
 
                     // define the method to be used
@@ -150,7 +150,7 @@ class CPT {
                 }
             }
 
-        // Else the post type name is only supplied.
+            // Else the post type name is only supplied.
         } else {
 
             // Apply to post type name.
@@ -170,97 +170,98 @@ class CPT {
         $this->options = $options;
 
         // Register taxonomies.
-        $this->add_action( 'init', array( &$this, 'register_taxonomies' ) );
+        $this->add_action('init', array(&$this, 'register_taxonomies'));
 
         // Register the post type.
-        $this->add_action( 'init', array( &$this, 'register_post_type' ) );
+        $this->add_action('init', array(&$this, 'register_post_type'));
 
         // Register exisiting taxonomies.
-        $this->add_action( 'init', array( &$this, 'register_exisiting_taxonomies' ) );
+        $this->add_action('init', array(&$this, 'register_exisiting_taxonomies'));
 
         // Add taxonomy to admin edit columns.
-        $this->add_filter( 'manage_edit-' . $this->post_type_name . '_columns', array( &$this, 'add_admin_columns' ) );
+        $this->add_filter('manage_edit-' . $this->post_type_name . '_columns', array(&$this, 'add_admin_columns'));
 
         // Populate the taxonomy columns with the posts terms.
-        $this->add_action( 'manage_' . $this->post_type_name . '_posts_custom_column', array( &$this, 'populate_admin_columns' ), 10, 2 );
+        $this->add_action('manage_' . $this->post_type_name . '_posts_custom_column', array(&$this, 'populate_admin_columns'), 10, 2);
 
         // Add filter select option to admin edit.
-        $this->add_action( 'restrict_manage_posts', array( &$this, 'add_taxonomy_filters' ) );
-       
-	   // Add meta box to admin edit.
-        $this->add_action( 'add_meta_boxes', array( &$this, 'add_your_fields_meta_box' ) );
-		
-	   // save meta box to database.
-        $this->add_action( 'save_post', array( &$this, 'save_your_fields_meta' ) );
-		
-	
+        $this->add_action('restrict_manage_posts', array(&$this, 'add_taxonomy_filters'));
+
+        // Add meta box to admin edit.
+        $this->add_action('add_meta_boxes', array(&$this, 'add_your_fields_meta_box'));
+
+        // save meta box to database.
+        $this->add_action('save_post', array(&$this, 'save_your_fields_meta'));
+
+
         // rewrite post update messages
-        $this->add_filter( 'post_updated_messages', array( &$this, 'updated_messages' ) );
-        $this->add_filter( 'bulk_post_updated_messages', array( &$this, 'bulk_updated_messages' ), 10, 2 );
-		
+        $this->add_filter('post_updated_messages', array(&$this, 'updated_messages'));
+        $this->add_filter('bulk_post_updated_messages', array(&$this, 'bulk_updated_messages'), 10, 2);
     }
 
-	function add_your_fields_meta_box() {
-	add_meta_box(
-		'bookcf', // $id
-		'Other Information', // $title
-		array($this, 'show_your_fields_meta_box'), // $callback
-		'book', // $screen
-		'normal', // $context
-		'high' // $priority
-	);
-}
-public function show_your_fields_meta_box() {  
-	global $post;  
-		$price = get_post_meta( $post->ID, 'price', true );
-	 	$rating = get_post_meta( $post->ID, 'rating', true ); ?>
-	<input type="hidden" name="your_meta_box_nonce" value="<?php echo wp_create_nonce( basename(__FILE__) ); ?>">
-	Price: <input type="text" name="price" value="<?php echo $price; ?>"><br>
-	Rating: <input type="radio" name="rating" value="1" <?php echo ($rating== 1) ?  "checked" : "" ;  ?>>1 
- <input type="radio" name="rating" value="2" <?php echo ($rating== 2) ?  "checked" : "" ;  ?>>2
-  <input type="radio" name="rating" value="3" <?php echo ($rating== 3) ?  "checked" : "" ;  ?>>3
-  <input type="radio" name="rating" value="4" <?php echo ($rating== 4) ?  "checked" : "" ;  ?>>4	
-  <input type="radio" name="rating" value="5" <?php echo ($rating== 5) ?  "checked" : "" ;  ?>>5	
-<?php
-}
+    function add_your_fields_meta_box() {
+        add_meta_box(
+                'bookcf', // $id
+                'Other Information', // $title
+                array($this, 'show_your_fields_meta_box'), // $callback
+                'book', // $screen
+                'normal', // $context
+                'high' // $priority
+        );
+    }
 
-function save_your_fields_meta( $post_id ) {   
-	// verify nonce
-	if ( !wp_verify_nonce( $_POST['your_meta_box_nonce'], basename(__FILE__) ) ) {
-		return $post_id; 
-	}
-	// check autosave
-	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-		return $post_id;
-	}
-	// check permissions
-	if ( 'page' === $_POST['post_type'] ) {
-		if ( !current_user_can( 'edit_page', $post_id ) ) {
-			return $post_id;
-		} elseif ( !current_user_can( 'edit_post', $post_id ) ) {
-			return $post_id;
-		}  
-	}
+    public function show_your_fields_meta_box() {
+        global $post;
+        $price = get_post_meta($post->ID, 'price', true);
+        $rating = get_post_meta($post->ID, 'rating', true);
+        ?>
+        <input type="hidden" name="your_meta_box_nonce" value="<?php echo wp_create_nonce(basename(__FILE__)); ?>">
+        Price: <input type="text" name="price" value="<?php echo $price; ?>"><br>
+        Rating: <input type="radio" name="rating" value="1" <?php echo ($rating == 1) ? "checked" : ""; ?>>1 
+        <input type="radio" name="rating" value="2" <?php echo ($rating == 2) ? "checked" : ""; ?>>2
+        <input type="radio" name="rating" value="3" <?php echo ($rating == 3) ? "checked" : ""; ?>>3
+        <input type="radio" name="rating" value="4" <?php echo ($rating == 4) ? "checked" : ""; ?>>4	
+        <input type="radio" name="rating" value="5" <?php echo ($rating == 5) ? "checked" : ""; ?>>5	
+        <?php
+    }
 
-	$old = get_post_meta( $post_id, 'price', true );
-	  $new = $_POST['price'];
-	 
-	if ( $new && $new !== $old ) {
-		update_post_meta( $post_id, 'price', $new );
-	} elseif ( '' === $new && $old ) {
-		delete_post_meta( $post_id, 'price', $old );
-	}
-	
-	$old = get_post_meta( $post_id, 'rating', true );
-	$new = $_POST['rating'];
+    function save_your_fields_meta($post_id) {
+        // verify nonce
+        if (!wp_verify_nonce($_POST['your_meta_box_nonce'], basename(__FILE__))) {
+            return $post_id;
+        }
+        // check autosave
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return $post_id;
+        }
+        // check permissions
+        if ('page' === $_POST['post_type']) {
+            if (!current_user_can('edit_page', $post_id)) {
+                return $post_id;
+            } elseif (!current_user_can('edit_post', $post_id)) {
+                return $post_id;
+            }
+        }
 
-	if ( $new && $new !== $old ) {
-		update_post_meta( $post_id, 'rating', $new );
-	} elseif ( '' === $new && $old ) {
-		delete_post_meta( $post_id, 'rating', $old );
-	}
-}
-	
+        $old = get_post_meta($post_id, 'price', true);
+        $new = $_POST['price'];
+
+        if ($new && $new !== $old) {
+            update_post_meta($post_id, 'price', $new);
+        } elseif ('' === $new && $old) {
+            delete_post_meta($post_id, 'price', $old);
+        }
+
+        $old = get_post_meta($post_id, 'rating', true);
+        $new = $_POST['rating'];
+
+        if ($new && $new !== $old) {
+            update_post_meta($post_id, 'rating', $new);
+        } elseif ('' === $new && $old) {
+            delete_post_meta($post_id, 'rating', $old);
+        }
+    }
+
     /**
      * Get
      *
@@ -269,14 +270,13 @@ function save_your_fields_meta( $post_id ) {
      * @param string $var The variable you would like to retrieve.
      * @return mixed Returns the value on success, boolean false whe it fails.
      */
-    function get( $var ) {
+    function get($var) {
 
         // If the variable exists.
-        if ( $this->$var ) {
+        if ($this->$var) {
 
             // On success return the value.
             return $this->$var;
-
         } else {
 
             // on fail return false
@@ -293,7 +293,7 @@ function save_your_fields_meta( $post_id ) {
      * @param mixed $var The variable you would like to create/overwrite.
      * @param mixed $value The value you would like to set to the variable.
      */
-    function set( $var, $value ) {
+    function set($var, $value) {
 
         // An array of reserved variables that cannot be overwritten.
         $reserved = array(
@@ -307,7 +307,7 @@ function save_your_fields_meta( $post_id ) {
         );
 
         // If the variable is not a reserved variable
-        if ( ! in_array( $var, $reserved ) ) {
+        if (!in_array($var, $reserved)) {
 
             // Write variable and value
             $this->$var = $value;
@@ -324,10 +324,10 @@ function save_your_fields_meta( $post_id ) {
      * @param integet $priority Order in which to execute the function, relation to other functions hooked to this action.
      * @param integer $accepted_args The number of arguments the function accepts.
      */
-    function add_action( $action, $function, $priority = 10, $accepted_args = 1 ) {
+    function add_action($action, $function, $priority = 10, $accepted_args = 1) {
 
         // Pass variables into WordPress add_action function
-        add_action( $action, $function, $priority, $accepted_args );
+        add_action($action, $function, $priority, $accepted_args);
     }
 
     /**
@@ -342,10 +342,10 @@ function save_your_fields_meta( $post_id ) {
      * @param  int     $priority         Order in which to execute the function, relation to other function hooked to this action.
      * @param  int     $accepted_args    The number of arguements the function accepts.
      */
-    function add_filter( $action, $function, $priority = 10, $accepted_args = 1 ) {
+    function add_filter($action, $function, $priority = 10, $accepted_args = 1) {
 
         // Pass variables into Wordpress add_action function
-        add_filter( $action, $function, $priority, $accepted_args );
+        add_filter($action, $function, $priority, $accepted_args);
     }
 
     /**
@@ -356,22 +356,22 @@ function save_your_fields_meta( $post_id ) {
      * @param  string $name Name to slugify.
      * @return string $name Returns the slug.
      */
-    function get_slug( $name = null ) {
+    function get_slug($name = null) {
 
         // If no name set use the post type name.
-        if ( ! isset( $name ) ) {
+        if (!isset($name)) {
 
             $name = $this->post_type_name;
         }
 
         // Name to lower case.
-        $name = strtolower( $name );
+        $name = strtolower($name);
 
         // Replace spaces with hyphen.
-        $name = str_replace( " ", "-", $name );
+        $name = str_replace(" ", "-", $name);
 
         // Replace underscore with hyphen.
-        $name = str_replace( "_", "-", $name );
+        $name = str_replace("_", "-", $name);
 
         return $name;
     }
@@ -388,16 +388,16 @@ function save_your_fields_meta( $post_id ) {
      * @param  string $name The slug name you want to pluralize.
      * @return string the friendly pluralized name.
      */
-    function get_plural( $name = null ) {
+    function get_plural($name = null) {
 
         // If no name is passed the post_type_name is used.
-        if ( ! isset( $name ) ) {
+        if (!isset($name)) {
 
             $name = $this->post_type_name;
         }
 
         // Return the plural name. Add 's' to the end.
-        return $this->get_human_friendly( $name ) . 's';
+        return $this->get_human_friendly($name) . 's';
     }
 
     /**
@@ -412,17 +412,16 @@ function save_your_fields_meta( $post_id ) {
      * @param string $name The slug name you want to unpluralize.
      * @return string The friendly singular name.
      */
-    function get_singular( $name = null ) {
+    function get_singular($name = null) {
 
         // If no name is passed the post_type_name is used.
-        if ( ! isset( $name ) ) {
+        if (!isset($name)) {
 
             $name = $this->post_type_name;
-
         }
 
         // Return the string.
-        return $this->get_human_friendly( $name );
+        return $this->get_human_friendly($name);
     }
 
     /**
@@ -437,16 +436,16 @@ function save_your_fields_meta( $post_id ) {
      * @param string $name The name you want to make friendly.
      * @return string The human friendly name.
      */
-    function get_human_friendly( $name = null ) {
+    function get_human_friendly($name = null) {
 
         // If no name is passed the post_type_name is used.
-        if ( ! isset( $name ) ) {
+        if (!isset($name)) {
 
             $name = $this->post_type_name;
         }
 
         // Return human friendly name.
-        return ucwords( strtolower( str_replace( "-", " ", str_replace( "_", " ", $name ) ) ) );
+        return ucwords(strtolower(str_replace("-", " ", str_replace("_", " ", $name))));
     }
 
     /**
@@ -457,25 +456,25 @@ function save_your_fields_meta( $post_id ) {
     function register_post_type() {
 
         // Friendly post type names.
-        $plural   = $this->plural;
+        $plural = $this->plural;
         $singular = $this->singular;
-        $slug     = $this->slug;
+        $slug = $this->slug;
 
         // Default labels.
         $labels = array(
-            'name'               => sprintf( __( '%s', $this->textdomain ), $plural ),
-            'singular_name'      => sprintf( __( '%s', $this->textdomain ), $singular ),
-            'menu_name'          => sprintf( __( '%s', $this->textdomain ), $plural ),
-            'all_items'          => sprintf( __( '%s', $this->textdomain ), $plural ),
-            'add_new'            => __( 'Add New', $this->textdomain ),
-            'add_new_item'       => sprintf( __( 'Add New %s', $this->textdomain ), $singular ),
-            'edit_item'          => sprintf( __( 'Edit %s', $this->textdomain ), $singular ),
-            'new_item'           => sprintf( __( 'New %s', $this->textdomain ), $singular ),
-            'view_item'          => sprintf( __( 'View %s', $this->textdomain ), $singular ),
-            'search_items'       => sprintf( __( 'Search %s', $this->textdomain ), $plural ),
-            'not_found'          => sprintf( __( 'No %s found', $this->textdomain ), $plural ),
-            'not_found_in_trash' => sprintf( __( 'No %s found in Trash', $this->textdomain ), $plural ),
-            'parent_item_colon'  => sprintf( __( 'Parent %s:', $this->textdomain ), $singular )
+            'name' => sprintf(__('%s', $this->textdomain), $plural),
+            'singular_name' => sprintf(__('%s', $this->textdomain), $singular),
+            'menu_name' => sprintf(__('%s', $this->textdomain), $plural),
+            'all_items' => sprintf(__('%s', $this->textdomain), $plural),
+            'add_new' => __('Add New', $this->textdomain),
+            'add_new_item' => sprintf(__('Add New %s', $this->textdomain), $singular),
+            'edit_item' => sprintf(__('Edit %s', $this->textdomain), $singular),
+            'new_item' => sprintf(__('New %s', $this->textdomain), $singular),
+            'view_item' => sprintf(__('View %s', $this->textdomain), $singular),
+            'search_items' => sprintf(__('Search %s', $this->textdomain), $plural),
+            'not_found' => sprintf(__('No %s found', $this->textdomain), $plural),
+            'not_found_in_trash' => sprintf(__('No %s found in Trash', $this->textdomain), $plural),
+            'parent_item_colon' => sprintf(__('Parent %s:', $this->textdomain), $singular)
         );
 
         // Default options.
@@ -488,16 +487,16 @@ function save_your_fields_meta( $post_id ) {
         );
 
         // Merge user submitted options with defaults.
-        $options = array_replace_recursive( $defaults, $this->options );
+        $options = array_replace_recursive($defaults, $this->options);
 
         // Set the object options as full options passed.
         $this->options = $options;
 
         // Check that the post type doesn't already exist.
-        if ( ! post_type_exists( $this->post_type_name ) ) {
+        if (!post_type_exists($this->post_type_name)) {
 
             // Register the post type.
-            register_post_type( $this->post_type_name, $options );
+            register_post_type($this->post_type_name, $options);
         }
     }
 
@@ -522,19 +521,19 @@ function save_your_fields_meta( $post_id ) {
         );
 
         // if an array of names are passed
-        if ( is_array( $taxonomy_names ) ) {
+        if (is_array($taxonomy_names)) {
 
             // Set the taxonomy name
             $taxonomy_name = $taxonomy_names['taxonomy_name'];
 
             // Cycle through possible names.
-            foreach ( $names as $name ) {
+            foreach ($names as $name) {
 
                 // If the user has set the name.
-                if ( isset( $taxonomy_names[ $name ] ) ) {
+                if (isset($taxonomy_names[$name])) {
 
                     // Use user submitted name.
-                    $$name = $taxonomy_names[ $name ];
+                    $$name = $taxonomy_names[$name];
 
                     // Else generate the name.
                 } else {
@@ -543,41 +542,39 @@ function save_your_fields_meta( $post_id ) {
                     $method = 'get_' . $name;
 
                     // Generate the name
-                    $$name = $this->$method( $taxonomy_name );
-
+                    $$name = $this->$method($taxonomy_name);
                 }
             }
 
             // Else if only the taxonomy_name has been supplied.
-        } else  {
+        } else {
 
             // Create user friendly names.
             $taxonomy_name = $taxonomy_names;
-            $singular = $this->get_singular( $taxonomy_name );
-            $plural   = $this->get_plural( $taxonomy_name );
-            $slug     = $this->get_slug( $taxonomy_name );
-
+            $singular = $this->get_singular($taxonomy_name);
+            $plural = $this->get_plural($taxonomy_name);
+            $slug = $this->get_slug($taxonomy_name);
         }
 
         // Default labels.
         $labels = array(
-            'name'                       => sprintf( __( '%s', $this->textdomain ), $plural ),
-            'singular_name'              => sprintf( __( '%s', $this->textdomain ), $singular ),
-            'menu_name'                  => sprintf( __( '%s', $this->textdomain ), $plural ),
-            'all_items'                  => sprintf( __( 'All %s', $this->textdomain ), $plural ),
-            'edit_item'                  => sprintf( __( 'Edit %s', $this->textdomain ), $singular ),
-            'view_item'                  => sprintf( __( 'View %s', $this->textdomain ), $singular ),
-            'update_item'                => sprintf( __( 'Update %s', $this->textdomain ), $singular ),
-            'add_new_item'               => sprintf( __( 'Add New %s', $this->textdomain ), $singular ),
-            'new_item_name'              => sprintf( __( 'New %s Name', $this->textdomain ), $singular ),
-            'parent_item'                => sprintf( __( 'Parent %s', $this->textdomain ), $plural ),
-            'parent_item_colon'          => sprintf( __( 'Parent %s:', $this->textdomain ), $plural ),
-            'search_items'               => sprintf( __( 'Search %s', $this->textdomain ), $plural ),
-            'popular_items'              => sprintf( __( 'Popular %s', $this->textdomain ), $plural ),
-            'separate_items_with_commas' => sprintf( __( 'Seperate %s with commas', $this->textdomain ), $plural ),
-            'add_or_remove_items'        => sprintf( __( 'Add or remove %s', $this->textdomain ), $plural ),
-            'choose_from_most_used'      => sprintf( __( 'Choose from most used %s', $this->textdomain ), $plural ),
-            'not_found'                  => sprintf( __( 'No %s found', $this->textdomain ), $plural ),
+            'name' => sprintf(__('%s', $this->textdomain), $plural),
+            'singular_name' => sprintf(__('%s', $this->textdomain), $singular),
+            'menu_name' => sprintf(__('%s', $this->textdomain), $plural),
+            'all_items' => sprintf(__('All %s', $this->textdomain), $plural),
+            'edit_item' => sprintf(__('Edit %s', $this->textdomain), $singular),
+            'view_item' => sprintf(__('View %s', $this->textdomain), $singular),
+            'update_item' => sprintf(__('Update %s', $this->textdomain), $singular),
+            'add_new_item' => sprintf(__('Add New %s', $this->textdomain), $singular),
+            'new_item_name' => sprintf(__('New %s Name', $this->textdomain), $singular),
+            'parent_item' => sprintf(__('Parent %s', $this->textdomain), $plural),
+            'parent_item_colon' => sprintf(__('Parent %s:', $this->textdomain), $plural),
+            'search_items' => sprintf(__('Search %s', $this->textdomain), $plural),
+            'popular_items' => sprintf(__('Popular %s', $this->textdomain), $plural),
+            'separate_items_with_commas' => sprintf(__('Seperate %s with commas', $this->textdomain), $plural),
+            'add_or_remove_items' => sprintf(__('Add or remove %s', $this->textdomain), $plural),
+            'choose_from_most_used' => sprintf(__('Choose from most used %s', $this->textdomain), $plural),
+            'not_found' => sprintf(__('No %s found', $this->textdomain), $plural),
         );
 
         // Default options.
@@ -590,17 +587,14 @@ function save_your_fields_meta( $post_id ) {
         );
 
         // Merge default options with user submitted options.
-        $options = array_replace_recursive( $defaults, $options );
+        $options = array_replace_recursive($defaults, $options);
 
         // Add the taxonomy to the object array, this is used to add columns and filters to admin panel.
         $this->taxonomies[] = $taxonomy_name;
 
         // Create array used when registering taxonomies.
-        $this->taxonomy_settings[ $taxonomy_name ] = $options;
-
+        $this->taxonomy_settings[$taxonomy_name] = $options;
     }
-
-
 
     /**
      * Register taxonomies
@@ -609,17 +603,16 @@ function save_your_fields_meta( $post_id ) {
      */
     function register_taxonomies() {
 
-        if ( is_array( $this->taxonomy_settings ) ) {
+        if (is_array($this->taxonomy_settings)) {
 
             // Foreach taxonomy registered with the post type.
-            foreach ( $this->taxonomy_settings as $taxonomy_name => $options ) {
+            foreach ($this->taxonomy_settings as $taxonomy_name => $options) {
 
                 // Register the taxonomy if it doesn't exist.
-                if ( ! taxonomy_exists( $taxonomy_name ) ) {
+                if (!taxonomy_exists($taxonomy_name)) {
 
                     // Register the taxonomy with Wordpress
-                    register_taxonomy( $taxonomy_name, $this->post_type_name, $options );
-
+                    register_taxonomy($taxonomy_name, $this->post_type_name, $options);
                 } else {
 
                     // If taxonomy exists, register it later with register_exisiting_taxonomies
@@ -636,9 +629,9 @@ function save_your_fields_meta( $post_id ) {
      */
     function register_exisiting_taxonomies() {
 
-        if( is_array( $this->exisiting_taxonomies ) ) {
-            foreach( $this->exisiting_taxonomies as $taxonomy_name ) {
-                register_taxonomy_for_object_type( $taxonomy_name, $this->post_type_name );
+        if (is_array($this->exisiting_taxonomies)) {
+            foreach ($this->exisiting_taxonomies as $taxonomy_name) {
+                register_taxonomy_for_object_type($taxonomy_name, $this->post_type_name);
             }
         }
     }
@@ -651,46 +644,46 @@ function save_your_fields_meta( $post_id ) {
      * @param array $columns Columns to be added to the admin edit screen.
      * @return array
      */
-    function add_admin_columns( $columns ) {
+    function add_admin_columns($columns) {
 
         // If no user columns have been specified, add taxonomies
-        if ( ! isset( $this->columns ) ) {
+        if (!isset($this->columns)) {
 
             $new_columns = array();
 
             // determine which column to add custom taxonomies after
-            if ( is_array( $this->taxonomies ) && in_array( 'post_tag', $this->taxonomies ) || $this->post_type_name === 'post' ) {
+            if (is_array($this->taxonomies) && in_array('post_tag', $this->taxonomies) || $this->post_type_name === 'post') {
                 $after = 'tags';
-            } elseif( is_array( $this->taxonomies ) && in_array( 'category', $this->taxonomies ) || $this->post_type_name === 'post' ) {
+            } elseif (is_array($this->taxonomies) && in_array('category', $this->taxonomies) || $this->post_type_name === 'post') {
                 $after = 'categories';
-            } elseif( post_type_supports( $this->post_type_name, 'author' ) ) {
+            } elseif (post_type_supports($this->post_type_name, 'author')) {
                 $after = 'author';
             } else {
                 $after = 'title';
             }
 
             // foreach exisiting columns
-            foreach( $columns as $key => $title ) {
+            foreach ($columns as $key => $title) {
 
                 // add exisiting column to the new column array
                 $new_columns[$key] = $title;
 
                 // we want to add taxonomy columns after a specific column
-                if( $key === $after ) {
+                if ($key === $after) {
 
                     // If there are taxonomies registered to the post type.
-                    if ( is_array( $this->taxonomies ) ) {
+                    if (is_array($this->taxonomies)) {
 
                         // Create a column for each taxonomy.
-                        foreach( $this->taxonomies as $tax ) {
+                        foreach ($this->taxonomies as $tax) {
 
                             // WordPress adds Categories and Tags automatically, ignore these
-                            if( $tax !== 'category' && $tax !== 'post_tag' ) {
+                            if ($tax !== 'category' && $tax !== 'post_tag') {
                                 // Get the taxonomy object for labels.
-                                $taxonomy_object = get_taxonomy( $tax );
+                                $taxonomy_object = get_taxonomy($tax);
 
                                 // Column key is the slug, value is friendly name.
-                                $new_columns[ $tax ] = sprintf( __( '%s', $this->textdomain ), $taxonomy_object->labels->name );
+                                $new_columns[$tax] = sprintf(__('%s', $this->textdomain), $taxonomy_object->labels->name);
                             }
                         }
                     }
@@ -699,7 +692,6 @@ function save_your_fields_meta( $post_id ) {
 
             // overide with new columns
             $columns = $new_columns;
-
         } else {
 
             // Use user submitted columns, these are defined using the object columns() method.
@@ -717,116 +709,109 @@ function save_your_fields_meta( $post_id ) {
      * @param string $column The name of the column.
      * @param integer $post_id The post ID.
      */
-    function populate_admin_columns( $column, $post_id ) {
+    function populate_admin_columns($column, $post_id) {
 
         // Get wordpress $post object.
         global $post;
 
         // determine the column
-        switch( $column ) {
+        switch ($column) {
 
             // If column is a taxonomy associated with the post type.
-            case ( taxonomy_exists( $column ) ) :
+            case ( taxonomy_exists($column) ) :
 
                 // Get the taxonomy for the post
-                $terms = get_the_terms( $post_id, $column );
+                $terms = get_the_terms($post_id, $column);
 
                 // If we have terms.
-                if ( ! empty( $terms ) ) {
+                if (!empty($terms)) {
 
                     $output = array();
 
                     // Loop through each term, linking to the 'edit posts' page for the specific term.
-                    foreach( $terms as $term ) {
+                    foreach ($terms as $term) {
 
                         // Output is an array of terms associated with the post.
                         $output[] = sprintf(
-
-                            // Define link.
-                            '<a href="%s">%s</a>',
-
-                            // Create filter url.
-                            esc_url( add_query_arg( array( 'post_type' => $post->post_type, $column => $term->slug ), 'edit.php' ) ),
-
-                            // Create friendly term name.
-                            esc_html( sanitize_term_field( 'name', $term->name, $term->term_id, $column, 'display' ) )
+                                // Define link.
+                                '<a href="%s">%s</a>',
+                                // Create filter url.
+                                esc_url(add_query_arg(array('post_type' => $post->post_type, $column => $term->slug), 'edit.php')),
+                                // Create friendly term name.
+                                esc_html(sanitize_term_field('name', $term->name, $term->term_id, $column, 'display'))
                         );
-
                     }
 
                     // Join the terms, separating them with a comma.
-                    echo join( ', ', $output );
+                    echo join(', ', $output);
 
-                // If no terms found.
+                    // If no terms found.
                 } else {
 
                     // Get the taxonomy object for labels
-                    $taxonomy_object = get_taxonomy( $column );
+                    $taxonomy_object = get_taxonomy($column);
 
                     // Echo no terms.
-                    printf( __( 'No %s', $this->textdomain ), $taxonomy_object->labels->name );
+                    printf(__('No %s', $this->textdomain), $taxonomy_object->labels->name);
                 }
 
-            break;
+                break;
 
             // If column is for the post ID.
             case 'post_id' :
 
                 echo $post->ID;
 
-            break;
+                break;
 
             // if the column is prepended with 'meta_', this will automagically retrieve the meta values and display them.
-            case ( preg_match( '/^meta_/', $column ) ? true : false ) :
+            case ( preg_match('/^meta_/', $column) ? true : false ) :
 
                 // meta_book_author (meta key = book_author)
-                $x = substr( $column, 5 );
+                $x = substr($column, 5);
 
-                $meta = get_post_meta( $post->ID, $x );
+                $meta = get_post_meta($post->ID, $x);
 
-                echo join( ", ", $meta );
+                echo join(", ", $meta);
 
-            break;
+                break;
 
             // If the column is post thumbnail.
             case 'icon' :
 
                 // Create the edit link.
-                $link = esc_url( add_query_arg( array( 'post' => $post->ID, 'action' => 'edit' ), 'post.php' ) );
+                $link = esc_url(add_query_arg(array('post' => $post->ID, 'action' => 'edit'), 'post.php'));
 
                 // If it post has a featured image.
-                if ( has_post_thumbnail() ) {
+                if (has_post_thumbnail()) {
 
                     // Display post featured image with edit link.
                     echo '<a href="' . $link . '">';
-                        the_post_thumbnail( array(60, 60) );
+                    the_post_thumbnail(array(60, 60));
                     echo '</a>';
-
                 } else {
 
                     // Display default media image with link.
-                    echo '<a href="' . $link . '"><img src="'. site_url( '/wp-includes/images/crystal/default.png' ) .'" alt="' . $post->post_title . '" /></a>';
-
+                    echo '<a href="' . $link . '"><img src="' . site_url('/wp-includes/images/crystal/default.png') . '" alt="' . $post->post_title . '" /></a>';
                 }
 
-            break;
+                break;
 
             // Default case checks if the column has a user function, this is most commonly used for custom fields.
             default :
 
                 // If there are user custom columns to populate.
-                if ( isset( $this->custom_populate_columns ) && is_array( $this->custom_populate_columns ) ) {
+                if (isset($this->custom_populate_columns) && is_array($this->custom_populate_columns)) {
 
                     // If this column has a user submitted function to run.
-                    if ( isset( $this->custom_populate_columns[ $column ] ) && is_callable( $this->custom_populate_columns[ $column ] ) ) {
+                    if (isset($this->custom_populate_columns[$column]) && is_callable($this->custom_populate_columns[$column])) {
 
                         // Run the function.
-                        call_user_func_array(  $this->custom_populate_columns[ $column ], array( $column, $post ) );
-
+                        call_user_func_array($this->custom_populate_columns[$column], array($column, $post));
                     }
                 }
 
-            break;
+                break;
         } // end switch( $column )
     }
 
@@ -837,7 +822,7 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param array $filters An array of taxonomy filters to display.
      */
-    function filters( $filters = array() ) {
+    function filters($filters = array()) {
 
         $this->filters = $filters;
     }
@@ -846,33 +831,33 @@ function save_your_fields_meta( $post_id ) {
      *  Add taxtonomy filters
      *
      * Creates select fields for filtering posts by taxonomies on admin edit screen.
-    */
+     */
     function add_taxonomy_filters() {
 
         global $typenow;
         global $wp_query;
 
         // Must set this to the post type you want the filter(s) displayed on.
-        if ( $typenow == $this->post_type_name ) {
+        if ($typenow == $this->post_type_name) {
 
             // if custom filters are defined use those
-            if ( is_array( $this->filters ) ) {
+            if (is_array($this->filters)) {
 
                 $filters = $this->filters;
 
-            // else default to use all taxonomies associated with the post
+                // else default to use all taxonomies associated with the post
             } else {
 
                 $filters = $this->taxonomies;
             }
 
-            if ( ! empty( $filters ) ) {
+            if (!empty($filters)) {
 
                 // Foreach of the taxonomies we want to create filters for...
-                foreach ( $filters as $tax_slug ) {
+                foreach ($filters as $tax_slug) {
 
                     // ...object for taxonomy, doesn't contain the terms.
-                    $tax = get_taxonomy( $tax_slug );
+                    $tax = get_taxonomy($tax_slug);
 
                     // Get taxonomy terms and order by name.
                     $args = array(
@@ -881,33 +866,33 @@ function save_your_fields_meta( $post_id ) {
                     );
 
                     // Get taxonomy terms.
-                    $terms = get_terms( $tax_slug, $args );
+                    $terms = get_terms($tax_slug, $args);
 
                     // If we have terms.
-                    if ( $terms ) {
+                    if ($terms) {
 
                         // Set up select box.
-                        printf( ' &nbsp;<select name="%s" class="postform">', $tax_slug );
+                        printf(' &nbsp;<select name="%s" class="postform">', $tax_slug);
 
                         // Default show all.
-                        printf( '<option value="0">%s</option>', sprintf( __( 'Show all %s', $this->textdomain ), $tax->label ) );
+                        printf('<option value="0">%s</option>', sprintf(__('Show all %s', $this->textdomain), $tax->label));
 
                         // Foreach term create an option field...
-                        foreach ( $terms as $term ) {
+                        foreach ($terms as $term) {
 
                             // ...if filtered by this term make it selected.
-                            if ( isset( $_GET[ $tax_slug ] ) && $_GET[ $tax_slug ] === $term->slug ) {
+                            if (isset($_GET[$tax_slug]) && $_GET[$tax_slug] === $term->slug) {
 
-                                printf( '<option value="%s" selected="selected">%s (%s)</option>', $term->slug, $term->name, $term->count );
+                                printf('<option value="%s" selected="selected">%s (%s)</option>', $term->slug, $term->name, $term->count);
 
-                            // ...create option for taxonomy.
+                                // ...create option for taxonomy.
                             } else {
 
-                                printf( '<option value="%s">%s (%s)</option>', $term->slug, $term->name, $term->count );
+                                printf('<option value="%s">%s (%s)</option>', $term->slug, $term->name, $term->count);
                             }
                         }
                         // End the select field.
-                        print( '</select>&nbsp;' );
+                        print( '</select>&nbsp;');
                     }
                 }
             }
@@ -921,14 +906,13 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param array $columns An array of columns to be displayed.
      */
-    function columns( $columns ) {
+    function columns($columns) {
 
         // If columns is set.
-        if( isset( $columns ) ) {
+        if (isset($columns)) {
 
             // Assign user submitted columns to object.
             $this->columns = $columns;
-
         }
     }
 
@@ -940,10 +924,9 @@ function save_your_fields_meta( $post_id ) {
      * @param string $column_name The name of the column to populate.
      * @param mixed $callback An anonyous function or callable array to call when populating the column.
      */
-    function populate_column( $column_name, $callback ) {
+    function populate_column($column_name, $callback) {
 
-        $this->custom_populate_columns[ $column_name ] = $callback;
-
+        $this->custom_populate_columns[$column_name] = $callback;
     }
 
     /**
@@ -953,16 +936,16 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param array $columns An array of columns that are sortable.
      */
-    function sortable( $columns = array() ) {
+    function sortable($columns = array()) {
 
         // Assign user defined sortable columns to object variable.
         $this->sortable = $columns;
 
         // Run filter to make columns sortable.
-        $this->add_filter( 'manage_edit-' . $this->post_type_name . '_sortable_columns', array( &$this, 'make_columns_sortable' ) );
+        $this->add_filter('manage_edit-' . $this->post_type_name . '_sortable_columns', array(&$this, 'make_columns_sortable'));
 
         // Run action that sorts columns on request.
-        $this->add_action( 'load-edit.php', array( &$this, 'load_edit' ) );
+        $this->add_action('load-edit.php', array(&$this, 'load_edit'));
     }
 
     /**
@@ -973,17 +956,17 @@ function save_your_fields_meta( $post_id ) {
      * @param array $columns Columns to be sortable.
      *
      */
-    function make_columns_sortable( $columns ) {
+    function make_columns_sortable($columns) {
 
         // For each sortable column.
-        foreach ( $this->sortable as $column => $values ) {
+        foreach ($this->sortable as $column => $values) {
 
             // Make an array to merge into wordpress sortable columns.
-            $sortable_columns[ $column ] = $values[0];
+            $sortable_columns[$column] = $values[0];
         }
 
         // Merge sortable columns array into wordpress sortable columns.
-        $columns = array_merge( $sortable_columns, $columns );
+        $columns = array_merge($sortable_columns, $columns);
 
         return $columns;
     }
@@ -998,8 +981,7 @@ function save_your_fields_meta( $post_id ) {
     function load_edit() {
 
         // Run filter to sort columns when requested
-        $this->add_filter( 'request', array( &$this, 'sort_columns' ) );
-
+        $this->add_filter('request', array(&$this, 'sort_columns'));
     }
 
     /**
@@ -1012,20 +994,19 @@ function save_your_fields_meta( $post_id ) {
      * @param array $vars The query vars submitted by user.
      * @return array A sorted array.
      */
-    function sort_columns( $vars ) {
+    function sort_columns($vars) {
 
         // Cycle through all sortable columns submitted by the user
-        foreach ( $this->sortable as $column => $values ) {
+        foreach ($this->sortable as $column => $values) {
 
             // Retrieve the meta key from the user submitted array of sortable columns
             $meta_key = $values[0];
 
             // If the meta_key is a taxonomy
-            if( taxonomy_exists( $meta_key ) ) {
+            if (taxonomy_exists($meta_key)) {
 
                 // Sort by taxonomy.
                 $key = "taxonomy";
-
             } else {
 
                 // else by meta key.
@@ -1033,11 +1014,10 @@ function save_your_fields_meta( $post_id ) {
             }
 
             // If the optional parameter is set and is set to true
-            if ( isset( $values[1] ) && true === $values[1] ) {
+            if (isset($values[1]) && true === $values[1]) {
 
                 // Vaules needed to be ordered by integer value
                 $orderby = 'meta_value_num';
-
             } else {
 
                 // Values are to be order by string value
@@ -1045,18 +1025,17 @@ function save_your_fields_meta( $post_id ) {
             }
 
             // Check if we're viewing this post type
-            if ( isset( $vars['post_type'] ) && $this->post_type_name == $vars['post_type'] ) {
+            if (isset($vars['post_type']) && $this->post_type_name == $vars['post_type']) {
 
                 // find the meta key we want to order posts by
-                if ( isset( $vars['orderby'] ) && $meta_key == $vars['orderby'] ) {
+                if (isset($vars['orderby']) && $meta_key == $vars['orderby']) {
 
                     // Merge the query vars with our custom variables
                     $vars = array_merge(
-                        $vars,
-                        array(
-                            'meta_key' => $meta_key,
-                            'orderby' => $orderby
-                        )
+                            $vars, array(
+                        'meta_key' => $meta_key,
+                        'orderby' => $orderby
+                            )
                     );
                 }
             }
@@ -1072,12 +1051,11 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param string $icon dashicon name
      */
-    function menu_icon( $icon = "dashicons-admin-page" ) {
+    function menu_icon($icon = "dashicons-admin-page") {
 
-        if ( is_string( $icon ) && stripos( $icon, "dashicons" ) !== false ) {
+        if (is_string($icon) && stripos($icon, "dashicons") !== false) {
 
             $this->options["menu_icon"] = $icon;
-
         } else {
 
             // Set a default menu icon
@@ -1090,7 +1068,7 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param string $textdomain Textdomain used for translation.
      */
-    function set_textdomain( $textdomain ) {
+    function set_textdomain($textdomain) {
         $this->textdomain = $textdomain;
     }
 
@@ -1101,27 +1079,25 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param array $messages an array of post updated messages
      */
-    function updated_messages( $messages ) {
+    function updated_messages($messages) {
 
         $post = get_post();
         $singular = $this->singular;
 
         $messages[$this->post_type_name] = array(
             0 => '',
-            1 => sprintf( __( '%s updated.', $this->textdomain ), $singular ),
-            2 => __( 'Custom field updated.', $this->textdomain ),
-            3 => __( 'Custom field deleted.', $this->textdomain ),
-            4 => sprintf( __( '%s updated.', $this->textdomain ), $singular ),
-            5 => isset( $_GET['revision'] ) ? sprintf( __( '%2$s restored to revision from %1$s', $this->textdomain ), wp_post_revision_title( (int) $_GET['revision'], false ), $singular ) : false,
-            6 => sprintf( __( '%s updated.', $this->textdomain ), $singular ),
-            7 => sprintf( __( '%s saved.', $this->textdomain ), $singular ),
-            8 => sprintf( __( '%s submitted.', $this->textdomain ), $singular ),
+            1 => sprintf(__('%s updated.', $this->textdomain), $singular),
+            2 => __('Custom field updated.', $this->textdomain),
+            3 => __('Custom field deleted.', $this->textdomain),
+            4 => sprintf(__('%s updated.', $this->textdomain), $singular),
+            5 => isset($_GET['revision']) ? sprintf(__('%2$s restored to revision from %1$s', $this->textdomain), wp_post_revision_title((int) $_GET['revision'], false), $singular) : false,
+            6 => sprintf(__('%s updated.', $this->textdomain), $singular),
+            7 => sprintf(__('%s saved.', $this->textdomain), $singular),
+            8 => sprintf(__('%s submitted.', $this->textdomain), $singular),
             9 => sprintf(
-                __( '%2$s scheduled for: <strong>%1$s</strong>.', $this->textdomain ),
-                date_i18n( __( 'M j, Y @ G:i', $this->textdomain ), strtotime( $post->post_date ) ),
-                $singular
+                    __('%2$s scheduled for: <strong>%1$s</strong>.', $this->textdomain), date_i18n(__('M j, Y @ G:i', $this->textdomain), strtotime($post->post_date)), $singular
             ),
-            10 => sprintf( __( '%s draft updated.', $this->textdomain ), $singular ),
+            10 => sprintf(__('%s draft updated.', $this->textdomain), $singular),
         );
 
         return $messages;
@@ -1134,17 +1110,17 @@ function save_your_fields_meta( $post_id ) {
      *
      * @param array $messages an array of bulk updated messages
      */
-    function bulk_updated_messages( $bulk_messages, $bulk_counts ) {
+    function bulk_updated_messages($bulk_messages, $bulk_counts) {
 
         $singular = $this->singular;
         $plural = $this->plural;
 
-        $bulk_messages[ $this->post_type_name ] = array(
-            'updated'   => _n( '%s '.$singular.' updated.', '%s '.$plural.' updated.', $bulk_counts['updated'] ),
-            'locked'    => _n( '%s '.$singular.' not updated, somebody is editing it.', '%s '.$plural.' not updated, somebody is editing them.', $bulk_counts['locked'] ),
-            'deleted'   => _n( '%s '.$singular.' permanently deleted.', '%s '.$plural.' permanently deleted.', $bulk_counts['deleted'] ),
-            'trashed'   => _n( '%s '.$singular.' moved to the Trash.', '%s '.$plural.' moved to the Trash.', $bulk_counts['trashed'] ),
-            'untrashed' => _n( '%s '.$singular.' restored from the Trash.', '%s '.$plural.' restored from the Trash.', $bulk_counts['untrashed'] ),
+        $bulk_messages[$this->post_type_name] = array(
+            'updated' => _n('%s ' . $singular . ' updated.', '%s ' . $plural . ' updated.', $bulk_counts['updated']),
+            'locked' => _n('%s ' . $singular . ' not updated, somebody is editing it.', '%s ' . $plural . ' not updated, somebody is editing them.', $bulk_counts['locked']),
+            'deleted' => _n('%s ' . $singular . ' permanently deleted.', '%s ' . $plural . ' permanently deleted.', $bulk_counts['deleted']),
+            'trashed' => _n('%s ' . $singular . ' moved to the Trash.', '%s ' . $plural . ' moved to the Trash.', $bulk_counts['trashed']),
+            'untrashed' => _n('%s ' . $singular . ' restored from the Trash.', '%s ' . $plural . ' restored from the Trash.', $bulk_counts['untrashed']),
         );
 
         return $bulk_messages;
@@ -1158,4 +1134,5 @@ function save_your_fields_meta( $post_id ) {
     function flush() {
         flush_rewrite_rules();
     }
+
 }

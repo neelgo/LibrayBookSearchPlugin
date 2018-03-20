@@ -2,14 +2,13 @@
 
 /**
  * 
- * @link              http://example.com
  * @since             0.0.1
  * @package           ds_library_book_search
  *
  * @wordpress-plugin
- * Plugin Name:       Dotsquares library book search
+ * Plugin Name:       library book search
  * Plugin URI:        http://example.com/ds_library_book_search-uri/
- * Description:       A search plugin for books in library i.e book is only custom post type for which this plugin works. This plugin and its code has name of dotsquares beacuse developer neelesh belongs to that company, In case he may want to extend this plugin for any number of post type  with any number of attributes/ fields / taxonomy all configurable from admin.
+ * Description:       A search plugin for books in library i.e book is only custom post type for which this plugin works. This plugin and its code, In case neelesh may want to extend this plugin for any number of post type with any number of attributes/ fields / taxonomy all configurable from admin.
  * Version:           0.0.1 beta
  * Author:            Neelesh Gothania
  * Author URI:        http://example.com/
@@ -18,26 +17,26 @@
  * Text Domain:       ds_library_book_search
  * Domain Path:       /languages
  */
-
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
+if (!defined('WPINC')) {
+    die;
 }
 
 /**
  * Currently plugin version.
  * Start at version 0.0.1 and use SemVer - https://semver.org
- * Rename this plugin if neelesh gets time and we realses next version.
+ * Rename this plugin if neelesh gets time and we releases next version.
  */
- if( !defined( 'DS_LIBRARY_BOOK_SEARCH_VERSION' ) ) define( 'DS_LIBRARY_BOOK_SEARCH_VERSION', '0.0.1' );
+if (!defined('DS_LIBRARY_BOOK_SEARCH_VERSION'))
+    define('DS_LIBRARY_BOOK_SEARCH_VERSION', '0.0.1');
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-ds-library-book-search-activator.php
  */
 function activate_ds_library_book_search() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-ds-library-book-search-activator.php';
-	Ds_library_book_search_Activator::activate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-ds-library-book-search-activator.php';
+    Ds_library_book_search_Activator::activate();
 }
 
 /**
@@ -45,18 +44,18 @@ function activate_ds_library_book_search() {
  * This action is documented in includes/class-ds-library-book-search-deactivator.php
  */
 function deactivate_ds_library_book_search() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-ds-library-book-search-deactivator.php';
-	Ds_library_book_search_Deactivator::deactivate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-ds-library-book-search-deactivator.php';
+    Ds_library_book_search_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_ds_library_book_search' );
-register_deactivation_hook( __FILE__, 'deactivate_ds_library_book_search' );
+register_activation_hook(__FILE__, 'activate_ds_library_book_search');
+register_deactivation_hook(__FILE__, 'deactivate_ds_library_book_search');
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-ds-library-book-search.php';
+require plugin_dir_path(__FILE__) . 'includes/class-ds-library-book-search.php';
 
 /**
  * Begins execution of the plugin.
@@ -69,8 +68,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-ds-library-book-search.php
  */
 function run_ds_library_book_search() {
 
-	$plugin = new Ds_library_book_search();
-	$plugin->run();
-
+    $plugin = new Ds_library_book_search();
+    $plugin->run();
 }
+
 run_ds_library_book_search();

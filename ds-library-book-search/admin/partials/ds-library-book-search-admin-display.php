@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Provide a admin area view for the plugin
  *
@@ -15,7 +14,7 @@
 
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 <div class="pluginsettings">
-<h2>Library book search settings</h2>
-<p>Library book search setup is easy as copy the shortcode to the text editor of your page</p>
-<p><strong>[Library-book-search]</strong></p>
+    <h2>Library book search settings</h2>
+    <p>Library book search setup is easy as copy the shortcode to the text editor of your page</p>
+    <p><strong>[Library-book-search]</strong></p>
 </div> 

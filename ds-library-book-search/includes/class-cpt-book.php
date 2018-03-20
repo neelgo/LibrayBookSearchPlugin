@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Custom Post Type book
  *
@@ -7,10 +8,7 @@
  *
  * @author  Neelesh Gothania <mr.neelesh.gothania@gmail.com>
  * @version 0.2
- */ 
- 
- 	
-		
+ */
 // create a book custom post type
 $books = new CPT('book');
 
@@ -34,17 +32,15 @@ $books->columns(array(
 
 // populate the price column
 $books->populate_column('price', function($column, $post) {
-   echo $price = get_post_meta( $post->ID, 'price', true );
-   // echo "£" . get_field('price'); // ACF get_field() function
-
-}); 
+    echo $price = get_post_meta($post->ID, 'price', true);
+    // echo "£" . get_field('price'); // ACF get_field() function
+});
 
 
 // populate the ratings column
 $books->populate_column('rating', function($column, $post) {
-	echo 	$rating = get_post_meta( $post->ID, 'rating', true ); 
-  //  echo get_field('rating') . '/5'; // ACF get_field() function
-
+    echo $rating = get_post_meta($post->ID, 'rating', true);
+    //  echo get_field('rating') . '/5'; // ACF get_field() function
 });
 
 
@@ -57,4 +53,3 @@ $books->sortable(array(
 
 // use "pages" icon for post type
 $books->menu_icon("dashicons-book-alt");
-	
